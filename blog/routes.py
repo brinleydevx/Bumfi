@@ -68,6 +68,17 @@ def logout():
     flash("Logged out", "info")
     return redirect(url_for("home"))
 
+# User Profile Page
+@main.route("/user/<string:username>")
+def user_profile(username):
+    user = User.query.filter_by(username=username).first_or_404()
+    posts = user.posts
+
+    return render_template(
+        "profile.html",
+        user=user,
+        posts=posts
+    )
 
 @main.route("/")
 def home():
@@ -92,6 +103,21 @@ def create_post():
         flash("Post created successfully!", "success")
         return redirect(url_for("main.home"))
     return render_template("create.html", form=form)
+
+# Post Delete route
+@main.route("/post/<int:post_id>delete", methods=["POST"])
+def delete_post(post_id):
+    post = Post.query.get_or_404(post_id)
+
+    # Ownership Verify
+    if post.author != current_user:
+        abort(403)
+
+    db.session.delete(post)
+    db.session.commit()
+
+    flash("Post deleted successfully.", "success")
+    return redirect(url_for("main.home"))
 
 @main.route("/post/<int:id>")
 def post_detail(id):
