@@ -1,2 +1,16 @@
-.venv
+.venv/
 requirements.txt
+__pycache__/
+*.pyc
+.DS_Store
+.env
+.idea/
+.vscode/
+*.log
+coverage/
+htmlcov/
+dist/
+build/
+*.egg-info/
+.ipynb_checkpoints/
+.mypy_cache/

@@ -6,7 +6,7 @@
         <h2>{{ post.title }}</h2>
         <small>{{ post.date_created.strftime("%Y-%m-%d") }}</small>
         <p>{{ post.content[:204] }}...</p>
-        <a href="{{ url_for('main.post_detail', post_id=post.id) }}">
+        <a href="{{ url_for('main.post_detail', id=post.id) }}">
             Read More
         </a>
     </article>

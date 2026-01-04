@@ -5,9 +5,15 @@
         {{ post.title }}
     </h2>
     <small>
-        {{ post.date_create.strftime("%Y-%m-%d") }}
+        {{ post.date_created.strftime("%Y-%m-%d") }}
     </small>
     <p>{{ post.content }}</p>
+    {% if current_user.is_authenticated and post.auhor == current_user %}
+        <a href="{{ url_for('main.edit_post', id=post.id) }}">
+            Edit Post
+        </a>
+    {% endif %}
+
 </article>
     <hr>
     <a href="/">Back to Posts</a>
