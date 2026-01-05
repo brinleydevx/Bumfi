@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Account — Bumfi{% endblock %}
+
+{% block content %}
+  <h2>Edit Account</h2>
+
+  <form method="POST" enctype="multipart/form-data">
+    {{ form.hidden_tag() }}
+
+    <div>
+      {{ form.username.label }}
+      {{ form.username() }}
+      {% for e in form.username.errors %}<small>{{ e }}</small>{% endfor %}
+    </div>
+
+    <div>
+      {{ form.email.label }}
+      {{ form.email() }}
+      {% for e in form.email.errors %}<small>{{ e }}</small>{% endfor %}
+    </div>
+
+    <div>
+      {{ form.full_name.label }}
+      {{ form.full_name() }}
+    </div>
+
+    <div>
+      {{ form.bio.label }}
+      {{ form.bio(rows=4, cols=50) }}
+      {% for e in form.bio.errors %}<small>{{ e }}</small>{% endfor %}
+    </div>
+
+    <div>
+      {{ form.website.label }}
+      {{ form.website() }}
+      {% for e in form.website.errors %}<small>{{ e }}</small>{% endfor %}
+    </div>
+
+    <div>
+      {{ form.github.label }}
+      {{ form.github() }}
+      {% for e in form.github.errors %}<small>{{ e }}</small>{% endfor %}
+    </div>
+
+    <div>
+      {{ form.twitter.label }}
+      {{ form.twitter() }}
+      {% for e in form.twitter.errors %}<small>{{ e }}</small>{% endfor %}
+    </div>
+
+    <div>
+      {{ form.picture.label }}
+      {{ form.picture() }}
+    </div>
+
+    <p>{{ form.submit() }}</p>
+  </form>
+
+{% endblock %}

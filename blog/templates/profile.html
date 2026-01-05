@@ -2,6 +2,26 @@
 {% block content %}
 
 <h2>{{ user.username }}'s Profile</h2>
+{% if user.profile_image %}
+    <img src="{{ url_for('static', filename='uploads/' ~ user.profile_image) }}" alt="{{ user.username }} avatar" style="width:96px;height:96px;border-radius:8px;object-fit:cover;">
+{% endif %}
+{% if user.full_name %}
+    <h3>{{ user.full_name }}</h3>
+{% endif %}
+{% if user.bio %}
+    <p class="profile-bio">{{ user.bio }}</p>
+{% endif %}
+<div class="profile-socials">
+    {% if user.website %}
+        <a href="{{ user.website }}" target="_blank" rel="noopener">Website</a>
+    {% endif %}
+    {% if user.github %}
+        <a href="{{ user.github }}" target="_blank" rel="noopener">GitHub</a>
+    {% endif %}
+    {% if user.twitter %}
+        <a href="{{ user.twitter }}" target="_blank" rel="noopener">Twitter</a>
+    {% endif %}
+</div>
 
 {% if user.email %}
 <p>Email: {{ user.email }}</p>

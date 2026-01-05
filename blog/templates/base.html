@@ -12,22 +12,42 @@
             {% endfor %}
         {% endblock title %}
     </title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"/>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Poppins:wght@300;400;500;700&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"/>
 </head>
 <body>
 
-    <nav>
-        <h2 class="brand">Bumfi</h2>
-        <a href="/home">Read</a>
-        <a href="/create">Write</a>
-        {% if current_user.is_authenticated %}
-          <a href="{{ url_for('main.user_profile', username=current_user.username) }}">
-              Profile
-          </a>
-        {% endif %}
-    </nav>
+        <nav class="site-nav">
+            <div class="container nav-inner">
+                <a class="brand" href="/">Bumfi</a>
+
+                <div class="nav-links">
+                    <a href="/home">Read</a>
+                    <a href="/create">Write</a>
+                </div>
+
+                <div class="nav-right">
+                    {% if current_user.is_authenticated %}
+                        <a class="btn btn-outline" href="{{ url_for('main.user_profile', username=current_user.username) }}">Profile</a>
+                        <a class="btn" href="/logout">Logout</a>
+                    {% else %}
+                        <a class="btn btn-outline" href="{{ url_for('main.login') }}">Login</a>
+                        <a class="btn btn-primary" href="{{ url_for('main.register') }}">Sign up</a>
+                    {% endif %}
+                </div>
+            </div>
+        </nav>
 
     <hr>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-container container">
+                    {% for category, msg in messages %}
+                        <div class="flash flash-{{ category }}">{{ msg }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
     {% block content %}{% endblock %}
 </body>
 </html>

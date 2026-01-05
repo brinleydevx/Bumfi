@@ -1,39 +1,75 @@
 {% extends 'base.html' %}
+
 {% block content %}
-    {% if posts.items %}
-    {% for post in posts.items %}
-        <article>
-            <h2>{{ post.title }}</h2>
-            <small>{{ post.date_created.strftime("%Y-%m-%d") }}</small>
-            <p>{{ post.content[:200] }}...</p>
+<div class="container content-grid">
+    <main class="posts-list">
+        <header class="section-header">
+            <h1 class="hero-title">Latest Stories</h1>
+            <hr>
+        </header>
 
-            <a href="{{ url_for('main.post_detail', id=post.id) }}">
-                Read more
-            </a>
-        </article>
+        {% if posts.items %}
+            {% for post in posts.items %}
+                <article class="post-card">
+                    <div class="post-meta">
+                        {% if post.author.profile_image %}
+                            <img class="avatar" src="{{ url_for('static', filename='uploads/' ~ post.author.profile_image) }}" alt="{{ post.author.username }}">
+                        {% else %}
+                            <span class="avatar-dot" aria-hidden="true"></span>
+                        {% endif %}
+
+                        <div class="meta-text">
+                            <strong>{{ post.author.username }}</strong>
+                            <small>· {{ post.date_created.strftime("%b %d, %Y") }}</small>
+                        </div>
+                    </div>
+
+                    <h2 class="post-title">{{ post.title }}</h2>
+                    <p class="post-excerpt">{{ post.content[:300] }}{% if post.content|length > 300 %}...{% endif %}</p>
+
+                    <div class="post-footer">
+                        <a class="read-link" href="{{ url_for('main.post_detail', id=post.id) }}">Read full story</a>
+                        <span class="post-tag">Stories</span>
+                    </div>
+                </article>
+            {% endfor %}
+        {% else %}
+            <p>No posts yet.</p>
+        {% endif %}
+
+        <div class="pagination">
+            {% if posts.has_prev %}
+                <a href="{{ url_for('main.home', page=posts.prev_num) }}">← Previous</a>
+            {% endif %}
+
+            <span class="page-indicator">Page {{ posts.page }} of {{ posts.pages }}</span>
+
+            {% if posts.has_next %}
+                <a href="{{ url_for('main.home', page=posts.next_num) }}">Next →</a>
+            {% endif %}
+        </div>
+    </main>
+
+    <aside class="sidebar">
+        <section class="recommended">
+            <h3>Recommended topics</h3>
+            <div class="topics">
+                <a class="topic-pill">Technology</a>
+                <a class="topic-pill">Programming</a>
+                <a class="topic-pill">Design</a>
+                <a class="topic-pill">Writing</a>
+                <a class="topic-pill">Productivity</a>
+            </div>
+        </section>
+
         <hr>
-    {% endfor %}
-{% else %}
-    <p>No posts yet.</p>
-{% endif %}
 
-<div class="pagination">
-
-    {% if posts.has_prev %}
-        <a href="{{ url_for('main.home', page=posts.prev_num) }}">
-            ← Previous
-        </a>
-    {% endif %}
-
-    Page {{ posts.page }} of {{ posts.pages }}
-
-    {% if posts.has_next %}
-        <a href="{{ url_for('main.home', page=posts.next_num) }}">
-            Next →
-        </a>
-    {% endif %}
-
+        <aside class="become-writer">
+            <h3>Become a writer</h3>
+            <p>Share your knowledge and inspire others. Start your writing journey today.</p>
+            <a class="btn btn-primary" href="/create">Get started</a>
+        </aside>
+    </aside>
 </div>
-
 
 {% endblock %}

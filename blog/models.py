@@ -11,6 +11,12 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(100), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
     email = db.Column(db.String(50), nullable=True)
+    profile_image = db.Column(db.String(255), nullable=True, default='default.png')
+    full_name = db.Column(db.String(150), nullable=True)
+    bio = db.Column(db.Text, nullable=True)
+    website = db.Column(db.String(255), nullable=True)
+    github = db.Column(db.String(255), nullable=True)
+    twitter = db.Column(db.String(255), nullable=True)
 
     # ONE relationship definition
     posts = db.relationship("Post", backref="author", lazy=True)
@@ -64,3 +70,6 @@ class Comment(db.Model):
         "Post",
         backref=db.backref("comments", lazy=True)
     )
+
+    parent_id = db.Column(db.Integer, db.ForeignKey('comment.id'), nullable=True)
+    replies = db.relationship('Comment', backref=db.backref('parent', remote_side=[id]), lazy=True)

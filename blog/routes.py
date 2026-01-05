@@ -1,10 +1,14 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, abort
-from werkzeug.utils import redirect
+from flask import Blueprint, render_template, redirect, url_for, flash, abort, request, current_app
+from werkzeug.utils import redirect, secure_filename
 from flask_login import login_required, current_user, logout_user, login_user
 from . import db
 
+import os
+import secrets
+
 from .models import Post, User, Comment
-from .forms import PostForm, CommentForm
+from .forms import PostForm, CommentForm, EditProfileForm, RequestResetForm, ResetPasswordForm
+from itsdangerous import URLSafeTimedSerializer
 
 main = Blueprint("main", __name__)
 
@@ -18,7 +22,8 @@ def register():
         email = request.form["email"]
         password = request.form["password"]
 
-        existing = User.query.filter(
+        # Use minimal-entity query to avoid selecting model columns that may not exist yet
+        existing = db.session.query(User.id).filter(
             (User.username == username) | (User.email == email)
         ).first()
 
@@ -44,7 +49,7 @@ def register():
 @main.route("/login", methods=["GET", "POST"])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for("home"))
+        return redirect(url_for("main.home"))
 
     if request.method == "POST":
         username = request.form["username"]
@@ -79,6 +84,24 @@ def user_profile(username):
         user=user,
         posts=posts
     )
+
+
+def save_profile_picture(file_storage):
+    if not file_storage:
+        return None
+
+    filename = secure_filename(file_storage.filename)
+    _, ext = os.path.splitext(filename)
+    unique = secrets.token_hex(8)
+    new_name = f"{unique}{ext}"
+
+    upload_folder = current_app.config.get('UPLOAD_FOLDER')
+    os.makedirs(upload_folder, exist_ok=True)
+
+    path = os.path.join(upload_folder, new_name)
+    file_storage.save(path)
+
+    return new_name
 
 @main.route("/")
 def landing_page():
@@ -131,6 +154,91 @@ def create_post():
 
     return render_template("create.html", form=form)
 
+
+@main.route('/account', methods=['GET', 'POST'])
+@login_required
+def account():
+    form = EditProfileForm()
+
+    if request.method == 'GET':
+        form.username.data = current_user.username
+        form.email.data = current_user.email
+        form.full_name.data = current_user.full_name
+        form.bio.data = current_user.bio
+
+    if form.validate_on_submit():
+        # handle picture
+        if form.picture.data:
+            pic_name = save_profile_picture(form.picture.data)
+            if pic_name:
+                current_user.profile_image = pic_name
+
+        current_user.username = form.username.data
+        current_user.email = form.email.data
+        current_user.full_name = form.full_name.data
+        current_user.bio = form.bio.data
+        db.session.commit()
+
+        flash('Account updated.', 'success')
+        return redirect(url_for('main.account'))
+
+    return render_template('edit_account.html', form=form)
+
+
+def send_reset_email(user, token):
+    # Simple fallback: print link to console and flash message.
+    reset_url = url_for('main.reset_token', token=token, _external=True)
+    # In production, integrate Flask-Mail or other mail provider.
+    print(f"Password reset link for {user.email}: {reset_url}")
+    flash('If an account exists for that email, a reset link has been sent (check console in dev).', 'info')
+
+
+@main.route('/reset_password', methods=['GET', 'POST'])
+def reset_request():
+    if current_user.is_authenticated:
+        return redirect(url_for('main.home'))
+
+    form = RequestResetForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
+        if user:
+            s = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
+            token = s.dumps({'user_id': user.id})
+            send_reset_email(user, token)
+
+        # Always flash the same message to avoid revealing accounts
+        return redirect(url_for('main.login'))
+
+    return render_template('reset_request.html', form=form)
+
+
+@main.route('/reset_password/<token>', methods=['GET', 'POST'])
+def reset_token(token):
+    if current_user.is_authenticated:
+        return redirect(url_for('main.home'))
+
+    s = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
+    try:
+        data = s.loads(token, max_age=3600)
+        user_id = data.get('user_id')
+    except Exception:
+        flash('That is an invalid or expired token', 'warning')
+        return redirect(url_for('main.reset_request'))
+
+    user = User.query.get(user_id)
+    if not user:
+        flash('Invalid token', 'warning')
+        return redirect(url_for('main.reset_request'))
+
+    form = ResetPasswordForm()
+    if form.validate_on_submit():
+        user.set_password(form.password.data)
+        db.session.commit()
+        flash('Your password has been updated. Please log in.', 'success')
+        return redirect(url_for('main.login'))
+
+    return render_template('reset_token.html', form=form)
+
 # Post Delete route
 @main.route("/post/<int:post_id>delete", methods=["POST"])
 def delete_post(post_id):
@@ -150,16 +258,23 @@ def delete_post(post_id):
 def post_detail(id):
     post = Post.query.get_or_404(id)
     form = CommentForm()
-
     if form.validate_on_submit():
         if not current_user.is_authenticated:
             flash("Login to comment", "warning")
             return redirect(url_for("main.login"))
 
+        parent_id = None
+        # form.parent_id will be populated if this is a reply
+        try:
+            parent_id = int(form.parent_id.data) if form.parent_id.data else None
+        except Exception:
+            parent_id = None
+
         comment = Comment(
             content=form.content.data,
             author=current_user,
-            post=post
+            post=post,
+            parent_id=parent_id
         )
 
         db.session.add(comment)

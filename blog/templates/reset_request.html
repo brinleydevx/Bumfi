@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block title %}Reset Password — Bumfi{% endblock %}
+
+{% block content %}
+  <h2>Reset Password</h2>
+  <form method="POST">
+    {{ form.hidden_tag() }}
+    <div>
+      {{ form.email.label }}
+      {{ form.email() }}
+      {% for e in form.email.errors %}<small>{{ e }}</small>{% endfor %}
+    </div>
+    <p>{{ form.submit() }}</p>
+  </form>
+{% endblock %}

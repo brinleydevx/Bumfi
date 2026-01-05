@@ -1,13 +1,47 @@
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Bumfi | Share your idea</title>
-</head>
-<body>
-    <a href="/register">Get Started</a>
-</body>
-</html>
+{% extends 'base.html' %}
+
+{% block title %}Bumfi | Share your idea{% endblock %}
+
+{% block content %}
+<section class="hero-section">
+    <div class="container hero-inner">
+        <div class="hero-copy">
+            <h1 class="hero-title">Share bold ideas. Inspire others.</h1>
+            <p class="hero-subtitle">Create thoughtful posts, join conversations, and build your voice with Bumfi — a simple space for writers and thinkers.</p>
+            <p class="hero-ctas">
+                <a class="btn btn-primary" href="/register">Get Started</a>
+                <a class="btn btn-outline" href="/home">Explore Posts</a>
+            </p>
+        </div>
+
+        <div class="hero-image" aria-hidden="true">
+            <img src="{{ url_for('static', filename='img/landing-hero.svg') }}" alt="Decorative waves"/>
+        </div>
+    </div>
+</section>
+
+<section class="features container">
+    <h2>Why people choose Bumfi</h2>
+    <div class="feature-grid">
+        <div class="feature">
+            <h3>Elegant reading</h3>
+            <p>Clean typography and thoughtful layouts make your words stand out.</p>
+        </div>
+        <div class="feature">
+            <h3>Fast publishing</h3>
+            <p>Compose and publish in seconds — focus on ideas, not tooling.</p>
+        </div>
+        <div class="feature">
+            <h3>Community</h3>
+            <p>Engage with readers through comments and build your audience.</p>
+        </div>
+    </div>
+</section>
+
+<section class="signup-cta">
+    <div class="container">
+        <p class="signup-copy">Ready to start writing?</p>
+        <a class="btn btn-primary" href="/register">Create your account</a>
+    </div>
+</section>
+{% endblock %}

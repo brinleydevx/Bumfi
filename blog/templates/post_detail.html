@@ -13,32 +13,87 @@
             {{ form.hidden_tag() }}
             {{ form.content.label }}
             {{ form.content(rows=3) }}
+            {{ form.parent_id() }}
             {{ form.submit() }}
         </form>
     {% else %}
         <p><a href="{{ url_for('main.login') }}">Login</a></p>
     {% endif %}
 
-    <h3>Comments ({{ post.comments|length }})</h3>
+        <h3>Comments ({{ post.comments|length }})</h3>
 
-    {% for comment in post.comments %}
-        <div class="comment">
-            <strong>{{ comment.author.username }}</strong>
-            <small>{{ comment.date_created.strftime("%Y-%m-%d %H:%M") }}</small>
+        {% set top_comments = post.comments|selectattr('parent', 'equalto', None)|list %}
+        {% if top_comments %}
+            {% for comment in top_comments %}
+                <div class="comment">
+                        <strong>{{ comment.author.username }}</strong>
+                        <small>{{ comment.date_created.strftime("%Y-%m-%d %H:%M") }}</small>
 
-            <p>{{ comment.content }}</p>
+                        <p>{{ comment.content }}</p>
 
-            {% if comment.author == current_user %}
-                <a href="{{ url_for('main.delete_comment', id=comment.id) }}"
-                   onclick="return confirm('Delete comment?')">
-                   Delete
-                </a>
-            {% endif %}
-        </div>
-        <hr>
-    {% else %}
-        <p>No comments yet.</p>
-    {% endfor %}
+                        <div class="comment-actions">
+                            {% if current_user.is_authenticated %}
+                                <a href="#" class="reply-link" data-comment-id="{{ comment.id }}">Reply</a>
+                            {% else %}
+                                <a href="{{ url_for('main.login') }}">Login to reply</a>
+                            {% endif %}
+
+                            {% if comment.author == current_user %}
+                                    <a href="{{ url_for('main.delete_comment', id=comment.id) }}"
+                                         onclick="return confirm('Delete comment?')">
+                                         Delete
+                                    </a>
+                            {% endif %}
+                        </div>
+
+                        {% for reply in comment.replies %}
+                            <div class="comment reply">
+                                <strong>{{ reply.author.username }}</strong>
+                                <small>{{ reply.date_created.strftime("%Y-%m-%d %H:%M") }}</small>
+                                <p>{{ reply.content }}</p>
+                                <div class="comment-actions">
+                                    {% if current_user.is_authenticated %}
+                                        <a href="#" class="reply-link" data-comment-id="{{ reply.id }}">Reply</a>
+                                    {% endif %}
+                                    {% if reply.author == current_user %}
+                                        <a href="{{ url_for('main.delete_comment', id=reply.id) }}" onclick="return confirm('Delete comment?')">Delete</a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+
+                        <div class="reply-form" id="reply-form-{{ comment.id }}" style="display:none; margin-top:0.5rem;">
+                            <form method="POST">
+                                {{ form.hidden_tag() }}
+                                {{ form.content(rows=2) }}
+                                <input type="hidden" name="parent_id" value="{{ comment.id }}" />
+                                {{ form.submit(class="btn") }}
+                            </form>
+                        </div>
+
+                </div>
+                <hr>
+            {% endfor %}
+        {% else %}
+            <p>No comments yet.</p>
+        {% endif %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+    document.querySelectorAll('.reply-link').forEach(function(el){
+        el.addEventListener('click', function(e){
+            e.preventDefault();
+            var id = this.getAttribute('data-comment-id');
+            var box = document.getElementById('reply-form-' + id);
+            if(!box) return;
+            box.style.display = (box.style.display === 'none' || box.style.display === '') ? 'block' : 'none';
+            // focus the textarea inside
+            var ta = box.querySelector('textarea');
+            if(ta) ta.focus();
+        });
+    });
+});
+</script>
 
 
     <p>

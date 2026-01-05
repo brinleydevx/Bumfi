@@ -1,28 +1,27 @@
 {% extends 'base.html' %}
 
+{% block title %}Write — Bumfi{% endblock %}
+
 {% block content %}
-    <h3>New Post</h3>
     <form method="POST">
         {{ form.hidden_tag() }}
-        <div>
-            {{ form.title.label }}
-            {{ form.title(size=60) }}
-            {% for error in form.title.errors %}
-                <small>{{ error }}</small>
-            {% endfor %}
-        </div>
-        <div>
-            {{ form.content.label }}
-            {{ form.content(rows=10, cols=60) }}
-            {% for error in form.content.errors %}
-                <small>{{ error }}</small>
-            {% endfor %}
+
+        <div class="editor-container container">
+            {{ form.title(class="editor-title", placeholder="Title") }}
+
+            {{ form.content(class="editor-body", placeholder="Tell your story...") }}
         </div>
 
-        <p>
-            {{ form.save_draft() }}
-            {{ form.publish() }}
-        </p>
+        <div class="editor-bottombar">
+            <div class="container bottombar-inner">
+                <div class="autosave">Auto-saved as draft</div>
+
+                <div class="editor-actions">
+                    {{ form.save_draft(class="btn btn-outline") }}
+                    {{ form.publish(class="btn btn-primary") }}
+                </div>
+            </div>
+        </div>
     </form>
 
 {% endblock %}

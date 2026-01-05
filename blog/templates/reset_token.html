@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block title %}Set New Password — Bumfi{% endblock %}
+
+{% block content %}
+  <h2>Set a new password</h2>
+  <form method="POST">
+    {{ form.hidden_tag() }}
+    <div>
+      {{ form.password.label }}
+      {{ form.password() }}
+      {% for e in form.password.errors %}<small>{{ e }}</small>{% endfor %}
+    </div>
+    <div>
+      {{ form.confirm.label }}
+      {{ form.confirm() }}
+      {% for e in form.confirm.errors %}<small>{{ e }}</small>{% endfor %}
+    </div>
+    <p>{{ form.submit() }}</p>
+  </form>
+{% endblock %}
