@@ -58,7 +58,6 @@
                 <label>{{ form.website.label }}</label>
                 <script src="{{ url_for('static', filename='js/validation.js') }}"></script>
                 <script>document.addEventListener('DOMContentLoaded', function(){ initValidation(); });</script>
-              {% endblock %}
                 {% for e in form.website.errors %}<small class="text-error">{{ e }}</small>{% endfor %}
               </div>
 
@@ -84,4 +83,5 @@
       </form>
     </div>
   </div>
+  {% endblock %}
 
